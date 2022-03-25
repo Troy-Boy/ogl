@@ -5,6 +5,7 @@ layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec2 vertexUV;
 layout(location = 2) in vec3 vertexNormal_modelspace;
 
+
 // Output data ; will be interpolated for each fragment.
 out vec2 UV;
 out vec3 Position_worldspace;
@@ -17,14 +18,27 @@ uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
 uniform vec3 LightPosition_worldspace;
+uniform float twist;
 
 void main(){
 
+	// displacement de la position en coordo du model
+	float x = vertexPosition_modelspace[0];
+	float y = vertexPosition_modelspace[1];
+	float z = vertexPosition_modelspace[2];
+	float xprime = x * cos(twist * y) - z * sin(twist * y);
+	float yprime = y;
+	float zprime = x * sin(twist * y) + z * cos(twist * y);
+
+	vec3 newModelSpace = vec3(xprime, yprime, zprime);
+
 	// Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
+	gl_Position =  MVP * vec4(newModelSpace,1);
 	
+
 	// Position of the vertex, in worldspace : M * position
 	Position_worldspace = (M * vec4(vertexPosition_modelspace,1)).xyz;
+
 	
 	// Vector that goes from the vertex to the camera, in camera space.
 	// In camera space, the camera is at the origin (0,0,0).
@@ -36,7 +50,16 @@ void main(){
 	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
 	
 	// Normal of the the vertex, in camera space
-	Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
+	x = vertexNormal_modelspace[0];
+	y = vertexNormal_modelspace[1];
+	z = vertexNormal_modelspace[2];
+	xprime = x * cos(twist * y) - z * sin(twist * y);
+	yprime = y;
+	zprime = x * sin(twist * y) + z * cos(twist * y);
+
+	vec3 newNormal = vec3(xprime, yprime, zprime);
+
+	Normal_cameraspace = ( V * M * vec4(newNormal,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
 	
 	// UV of the vertex. No special space for this one.
 	UV = vertexUV;

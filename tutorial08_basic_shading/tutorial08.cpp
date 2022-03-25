@@ -1,7 +1,16 @@
+//* Nom 1 : Achille Lanctot Saumure                                 *
+//*	CIP 1 :	lana2914										        *
+//*																	*
+//* Nom 2 : Fabio Provencher-Flores                                 *
+//*	CIP 2 : prof2311												*
+
+
 // Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <cmath>
+#include <iostream>
 
 // Include GLEW
 #include <GL/glew.h>
@@ -100,6 +109,9 @@ int main( void )
 	std::vector<glm::vec3> normals;
 	bool res = loadOBJ("suzanne.obj", vertices, uvs, normals);
 
+	// initiate twist value
+	float twist = 0.0f;
+
 	// Load it into a VBO
 
 	GLuint vertexbuffer;
@@ -120,6 +132,8 @@ int main( void )
 	// Get a handle for our "LightPosition" uniform
 	glUseProgram(programID);
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	GLfloat twistLocation = glGetUniformLocation(programID, "twist");
+
 
 	do{
 
@@ -128,6 +142,10 @@ int main( void )
 
 		// Use our shader
 		glUseProgram(programID);
+
+		// twist stuff
+		twist = 2.0f * sin(0.5f * (float)glfwGetTime());
+		glUniform1f(1, twist);
 
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
@@ -187,6 +205,18 @@ int main( void )
 			(void*)0                          // array buffer offset
 		);
 
+		//// 4rd attribute buffer : twist param
+		//glEnableVertexAttribArray(3);
+		//glBindBuffer(GL_ARRAY_BUFFER, twistbuffer);
+		//glVertexAttribPointer(
+		//	3,                                // attribute
+		//	1,                                // size
+		//	GL_FLOAT,                         // type
+		//	GL_FALSE,                         // normalized?
+		//	0,                                // stride
+		//	(void*)0                          // array buffer offset
+		//);
+
 		// Draw the triangles !
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() );
 
@@ -215,4 +245,3 @@ int main( void )
 
 	return 0;
 }
-
